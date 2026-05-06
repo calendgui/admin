@@ -3,13 +3,22 @@ export function render() {
     <div class="module-view">
       <div class="module-header">
         <span class="tag">módulo</span>
-        <h2>Challenges</h2>
+        <h2>TITLE_HERE</h2>
       </div>
-      <p class="module-desc">Módulo de challenges — contenido próximamente.</p>
+
+      <p class="module-desc">
+        Módulo TITLE_HERE funcionando correctamente 🚀
+      </p>
+
+      <button id="test-btn">Test action</button>
     </div>
-  `
+  `;
 }
 
-export function init() {
-  // lógica del módulo acá
+export function init(container) {
+  const btn = container.querySelector("#test-btn");
+
+  btn.addEventListener("click", () => {
+    alert("Módulo funcionando ✔");
+  });
 }
