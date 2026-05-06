@@ -2,7 +2,6 @@ import { logout } from "../config/auth.js";
 
 // importa tus módulos
 import * as users from "../modules/users.js";
-import * as slots from "../modules/slots.js";
 import * as challenges from "../modules/challenges.js";
 import * as announcements from "../modules/announcements.js";
 import * as spots from "../modules/spots.js";
@@ -11,7 +10,6 @@ import * as slots_type from "../modules/slots_type.js";
 
 const modules = {
   users,
-  slots,
   challenges,
   announcements,
   spots,
@@ -43,7 +41,6 @@ export function mountDashboard(user, rerender) {
         <!-- SIDEBAR -->
         <aside class="sidebar">
           <button data-module="users">Users</button>
-          <button data-module="slots">Slots</button>
           <button data-module="challenges">Challenges</button>
           <button data-module="announcements">Announcements</button>
           <button data-module="spots">Spots</button>
