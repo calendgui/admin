@@ -1,0 +1,1 @@
+export const BASE_URL = 'https://backendgui-rm2s.onrender.com'
