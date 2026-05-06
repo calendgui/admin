@@ -1,34 +1,14 @@
-import { logout, getToken } from "../config/auth.js";
-
-export function renderApp(user) {
+export function renderDashboard(user) {
   return `
-    <div>
-      <h1>Bienvenido 👋</h1>
-      <p>${user.email}</p>
-
-      <button id="btn-logout">Logout</button>
-      <button id="btn-token">Ver token</button>
-
-      <pre id="token-box"></pre>
-    </div>
+    <h1>Dashboard</h1>
+    <p>${user.email}</p>
+    <button id="logout">Logout</button>
   `;
 }
 
-export function initApp(user) {
-  const logoutBtn = document.getElementById("btn-logout");
-  const tokenBtn = document.getElementById("btn-token");
-  const tokenBox = document.getElementById("token-box");
-
-  logoutBtn.addEventListener("click", () => {
+export function initDashboard() {
+  document.getElementById("logout").addEventListener("click", async () => {
+    const { logout } = await import("../config/auth.js");
     logout();
-  });
-
-  tokenBtn.addEventListener("click", async () => {
-    try {
-      const token = await getToken();
-      tokenBox.textContent = token;
-    } catch (e) {
-      tokenBox.textContent = "No token";
-    }
   });
 }

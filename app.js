@@ -1,26 +1,19 @@
 import { onSession } from "./config/auth.js";
 import { renderLogin, initLogin } from "./modules/login.js";
-
+import { renderDashboard, initDashboard } from "./modules/dashboard.js";
 
 const root = document.getElementById("app");
-
-// 🔥 render inicial inmediato (importante)
-root.innerHTML = renderLogin();
-initLogin(render);
 
 function render(user) {
   root.innerHTML = "";
 
   if (user) {
-    root.innerHTML = renderApp(user);
-    initApp(user, render);
+    root.innerHTML = renderDashboard(user);
+    initDashboard(user, render);
   } else {
     root.innerHTML = renderLogin();
     initLogin(render);
   }
 }
 
-// Firebase state
-onSession((user) => {
-  render(user);
-});
+onSession(render);
