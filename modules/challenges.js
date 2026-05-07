@@ -19,6 +19,7 @@ export function render() {
         <hr />
         <h3 id="form-title">Crear Challenge</h3>
         <input id="field-id"     placeholder="ID"     />
+        <input id="field-etapa"  placeholder="Etapa"  />
         <input id="field-nombre" placeholder="Nombre" />
         <div>
           <button id="btn-save">Guardar</button>
@@ -34,6 +35,7 @@ export async function init(container) {
   const formPanel = container.querySelector("#form-panel");
   const formTitle = container.querySelector("#form-title");
   const idInput   = container.querySelector("#field-id");
+  const etapaInput = container.querySelector("#field-etapa");
   const nameInput = container.querySelector("#field-nombre");
 
   let editingId = null;
@@ -43,6 +45,7 @@ export async function init(container) {
     editingId          = mode === "edit" ? data.id : null;
     formTitle.textContent = mode === "edit" ? "Editar Challenge" : "Crear Challenge";
     idInput.value      = data.id    ?? "";
+    etapaInput.value = data.etapa  ?? "";
     nameInput.value    = data.nombre ?? "";
     idInput.disabled   = mode === "edit"; // el ID no se cambia al editar
     formPanel.style.display = "block";
@@ -52,8 +55,9 @@ export async function init(container) {
   function hideForm() {
     formPanel.style.display = "none";
     editingId = null;
-    idInput.value = "";
-    nameInput.value = "";
+    idInput.value    = "";
+    etapaInput.value = "";  // ← aquí
+    nameInput.value  = "";
     idInput.disabled = false;
   }
 
@@ -77,7 +81,7 @@ export async function init(container) {
       <div class="list-item" data-id="${c.id}">
         <span><strong>${c.id}</strong> — ${c.nombre}</span>
         <div>
-          <button class="btn-edit"   data-id="${c.id}" data-nombre="${c.nombre}">Editar</button>
+          <button class="btn-edit" data-id="${c.id}" data-etapa="${c.etapa}" data-nombre="${c.nombre}">Editar</button>
           <button class="btn-delete" data-id="${c.id}">Borrar</button>
         </div>
       </div>
@@ -86,7 +90,7 @@ export async function init(container) {
     // EDIT
     list.querySelectorAll(".btn-edit").forEach(btn => {
       btn.addEventListener("click", () => {
-        showForm("edit", { id: btn.dataset.id, nombre: btn.dataset.nombre });
+        showForm("edit", { id: btn.dataset.id, etapa: btn.dataset.etapa, nombre: btn.dataset.nombre });
       });
     });
 
@@ -127,7 +131,7 @@ export async function init(container) {
       const res = await fetch(`${API}/${editingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ nombre })
+        body: JSON.stringify({ etapa: etapaInput.value.trim(), nombre })
       });
       if (res.ok) { hideForm(); await fetchAll(); }
       else alert("Error al actualizar");
@@ -138,7 +142,7 @@ export async function init(container) {
       const res = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id, nombre })
+        body: JSON.stringify({ id, etapa: etapaInput.value.trim(), nombre })
       });
       if (res.ok) { hideForm(); await fetchAll(); }
       else alert("Error al crear");
