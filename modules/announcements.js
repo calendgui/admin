@@ -67,8 +67,8 @@ export async function init(container) {
     list.innerHTML = items.map(a => `
       <div class="list-item" data-id="${a.id}">
         <div class="list-item-info">
-          ${a.img_url ? `<img src="${a.img_url}" alt="${a.titulo}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />` : ""}
-          <span><strong>${a.id}</strong> — ${a.titulo}</span>
+          ${a.img_url ? `<img src="${a.img_url}" alt="${a.titulo}" style="width:100%;max-width:300px;height:180px;object-fit:cover;border-radius:8px;display:block;margin-bottom:6px;" />` : ""}
+          <span>${a.titulo}</span>
         </div>
         <button class="btn-delete" data-id="${a.id}">Borrar</button>
       </div>
