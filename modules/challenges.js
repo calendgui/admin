@@ -1,133 +1,150 @@
 import { getToken } from "../config/auth.js";
 import { BASE_URL } from "../config/config.js";
 
+const API = `${BASE_URL}/challenges`;
+
 export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
         <h2>Challenges</h2>
+        <button id="btn-new">+ Nuevo</button>
       </div>
 
-      <button id="btn-load">Cargar challenges</button>
+      <!-- LISTADO -->
+      <div id="list">Cargando...</div>
 
-      <div id="list"></div>
-
-      <hr />
-
-      <h3>Crear / Editar</h3>
-
-      <input id="id" placeholder="ID" />
-      <input id="nombre" placeholder="Nombre" />
-
-      <button id="btn-create">Crear</button>
-      <button id="btn-update">Actualizar</button>
+      <!-- FORM (oculto por defecto) -->
+      <div id="form-panel" style="display:none;">
+        <hr />
+        <h3 id="form-title">Crear Challenge</h3>
+        <input id="field-id"     placeholder="ID"     />
+        <input id="field-nombre" placeholder="Nombre" />
+        <div>
+          <button id="btn-save">Guardar</button>
+          <button id="btn-cancel">Cancelar</button>
+        </div>
+      </div>
     </div>
   `;
 }
 
-export function init(container) {
-  const list = container.querySelector("#list");
+export async function init(container) {
+  const list      = container.querySelector("#list");
+  const formPanel = container.querySelector("#form-panel");
+  const formTitle = container.querySelector("#form-title");
+  const idInput   = container.querySelector("#field-id");
+  const nameInput = container.querySelector("#field-nombre");
 
-  const idInput = container.querySelector("#id");
-  const nameInput = container.querySelector("#nombre");
+  let editingId = null;
 
-  // 🔥 GET ALL
-  container.querySelector("#btn-load").addEventListener("click", async () => {
+  // ─── helpers ────────────────────────────────────────────
+  function showForm(mode = "create", data = {}) {
+    editingId          = mode === "edit" ? data.id : null;
+    formTitle.textContent = mode === "edit" ? "Editar Challenge" : "Crear Challenge";
+    idInput.value      = data.id    ?? "";
+    nameInput.value    = data.nombre ?? "";
+    idInput.disabled   = mode === "edit"; // el ID no se cambia al editar
+    formPanel.style.display = "block";
+    nameInput.focus();
+  }
+
+  function hideForm() {
+    formPanel.style.display = "none";
+    editingId = null;
+    idInput.value = "";
+    nameInput.value = "";
+    idInput.disabled = false;
+  }
+
+  async function fetchAll() {
+    list.innerHTML = "Cargando...";
     const token = await getToken();
-
-    const res = await fetch(`${BASE_URL}/challenges`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const res   = await fetch(API, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-
     const data = await res.json();
+    renderList(data);
+  }
 
-    list.innerHTML = data
-      .map(
-        (c) => `
-        <div style="padding:5px;border:1px solid #ccc;margin:5px;">
-          <strong>${c.id}</strong> - ${c.nombre}
+  function renderList(items) {
+    if (!items.length) {
+      list.innerHTML = "<p>No hay challenges.</p>";
+      return;
+    }
 
-          <button data-id="${c.id}" class="delete">X</button>
-          <button data-id="${c.id}" class="edit">Edit</button>
+    list.innerHTML = items.map(c => `
+      <div class="list-item" data-id="${c.id}">
+        <span><strong>${c.id}</strong> — ${c.nombre}</span>
+        <div>
+          <button class="btn-edit"   data-id="${c.id}" data-nombre="${c.nombre}">Editar</button>
+          <button class="btn-delete" data-id="${c.id}">Borrar</button>
         </div>
-      `
-      )
-      .join("");
+      </div>
+    `).join("");
+
+    // EDIT
+    list.querySelectorAll(".btn-edit").forEach(btn => {
+      btn.addEventListener("click", () => {
+        showForm("edit", { id: btn.dataset.id, nombre: btn.dataset.nombre });
+      });
+    });
 
     // DELETE
-    list.querySelectorAll(".delete").forEach((btn) => {
+    list.querySelectorAll(".btn-delete").forEach(btn => {
       btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
+        if (!confirm(`¿Borrar challenge "${btn.dataset.id}"?`)) return;
         const token = await getToken();
-
-        await fetch(`${BASE_URL}/challenges/${id}`, {
+        const res = await fetch(`${API}/${btn.dataset.id}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
-
-        btn.parentElement.remove();
+        if (res.ok) {
+          btn.closest(".list-item").remove();
+        } else {
+          alert("Error al borrar");
+        }
       });
     });
+  }
 
-    // EDIT (solo carga datos al form)
-    list.querySelectorAll(".edit").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
+  // ─── botón "+ Nuevo" ────────────────────────────────────
+  container.querySelector("#btn-new").addEventListener("click", () => {
+    showForm("create");
+  });
 
-        const token = await getToken();
+  // ─── cancelar ───────────────────────────────────────────
+  container.querySelector("#btn-cancel").addEventListener("click", hideForm);
 
-        const res = await fetch(`${BASE_URL}/challenges/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+  // ─── guardar (create o update) ──────────────────────────
+  container.querySelector("#btn-save").addEventListener("click", async () => {
+    const token  = await getToken();
+    const nombre = nameInput.value.trim();
+    if (!nombre) { alert("El nombre es obligatorio"); return; }
 
-        const data = await res.json();
-
-        idInput.value = data.id;
-        nameInput.value = data.nombre;
+    if (editingId) {
+      // PATCH
+      const res = await fetch(`${API}/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ nombre })
       });
-    });
+      if (res.ok) { hideForm(); await fetchAll(); }
+      else alert("Error al actualizar");
+    } else {
+      // POST
+      const id = idInput.value.trim();
+      if (!id) { alert("El ID es obligatorio"); return; }
+      const res = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id, nombre })
+      });
+      if (res.ok) { hideForm(); await fetchAll(); }
+      else alert("Error al crear");
+    }
   });
 
-  // 🔥 CREATE
-  container.querySelector("#btn-create").addEventListener("click", async () => {
-    const token = await getToken();
-
-    await fetch(`${BASE_URL}/challenges`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        id: idInput.value,
-        nombre: nameInput.value
-      })
-    });
-
-    alert("Creado ✔");
-  });
-
-  // 🔥 UPDATE
-  container.querySelector("#btn-update").addEventListener("click", async () => {
-    const token = await getToken();
-
-    await fetch(`${BASE_URL}/challenges/${idInput.value}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        nombre: nameInput.value
-      })
-    });
-
-    alert("Actualizado ✔");
-  });
+  // ─── carga inicial automática ───────────────────────────
+  await fetchAll();
 }
