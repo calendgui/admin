@@ -48,7 +48,7 @@ export async function init(container) {
   // ─── helpers ────────────────────────────────────────────
   function showForm(user) {
     editingUid            = user.uid;
-    formEmail.textContent = user.email ?? user.uid;
+    formEmail.textContent = user.nombre ?? user.email ?? user.uid;
     rolSelect.value       = user.rol ?? 1;
     formPanel.style.display = "block";
     formPanel.scrollIntoView({ behavior: "smooth" });
@@ -78,7 +78,7 @@ export async function init(container) {
     list.innerHTML = items.map(u => `
       <div class="list-item" data-uid="${u.uid}">
         <div>
-          <span>${u.email ?? "—"}</span>
+          <span>${u.nombre ?? "—"} <small style="opacity:0.5;">${u.email ?? ""}</small></span>
           <small style="margin-left:8px;opacity:0.6;">
             ${ROL_LABELS[u.rol] ?? "Sin rol"}
             ${u.ci    ? `· CI: ${u.ci}`       : ""}
@@ -86,7 +86,7 @@ export async function init(container) {
           </small>
         </div>
         <div>
-          <button class="btn-edit-rol" data-uid="${u.uid}" data-email="${u.email ?? ""}" data-rol="${u.rol ?? 1}">Rol</button>
+          <button class="btn-edit-rol" data-uid="${u.uid}" data-email="${u.email ?? ""}" data-nombre="${u.nombre ?? ""}" data-rol="${u.rol ?? 1}">Rol</button>
           <button class="btn-delete"   data-uid="${u.uid}" data-email="${u.email ?? u.uid}">Borrar</button>
         </div>
       </div>
