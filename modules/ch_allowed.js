@@ -19,80 +19,47 @@ export function render() {
         <hr />
         <h3>Challenges habilitados para: <span id="supervisor-nombre"></span></h3>
 
-        <div id="form-agregar">
-          <select id="select-challenge">
-            <option value="">-- Seleccionar challenge --</option>
-          </select>
-          <button id="btn-agregar">Agregar</button>
-        </div>
-
         <div id="challenges-list">Cargando...</div>
+        <button id="btn-guardar" style="display:none;">Guardar cambios</button>
       </div>
     </div>
   `;
 }
 
 export async function init(container) {
-  const supervisoresList  = container.querySelector("#supervisores-list");
-  const supervisorPanel   = container.querySelector("#supervisor-panel");
-  const supervisorNombre  = container.querySelector("#supervisor-nombre");
-  const selectChallenge   = container.querySelector("#select-challenge");
-  const challengesList    = container.querySelector("#challenges-list");
+  const supervisoresList = container.querySelector("#supervisores-list");
+  const supervisorPanel  = container.querySelector("#supervisor-panel");
+  const supervisorNombre = container.querySelector("#supervisor-nombre");
+  const challengesList   = container.querySelector("#challenges-list");
+  const btnGuardar       = container.querySelector("#btn-guardar");
 
   let selectedUid = null;
-  let todosLosChallenges = [];
 
-  // ─── cargar todos los challenges disponibles para el select ───
-  async function fetchChallengesDisponibles() {
-    const token = await getToken();
-    const res = await fetch(API_CHALLENGES, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    todosLosChallenges = await res.json();
-
-    selectChallenge.innerHTML = `<option value="">-- Seleccionar challenge --</option>` +
-      todosLosChallenges.map(c => `<option value="${c.id}">${c.nombre}</option>`).join("");
-  }
-
-  // ─── cargar challenges habilitados del supervisor seleccionado ───
-  async function fetchChallowedDeSupervisor(uid) {
+  async function fetchYRenderChallenges(uid) {
     challengesList.innerHTML = "Cargando...";
+    btnGuardar.style.display = "none";
+
     const token = await getToken();
-    const res = await fetch(`${API}/${uid}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    renderChallengesList(data);
-  }
 
-  function renderChallengesList(items) {
-    if (!items.length) {
-      challengesList.innerHTML = "<p>Sin challenges habilitados.</p>";
-      return;
-    }
+    const [resTodos, resHabilitados] = await Promise.all([
+      fetch(API_CHALLENGES, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/${uid}`,  { headers: { Authorization: `Bearer ${token}` } })
+    ]);
 
-    challengesList.innerHTML = items.map(c => `
-      <div class="list-item" data-id="${c.id}">
-        <span>${c.nombre}</span>
-        <button class="btn-quitar" data-id="${Number(c.id)}">Quitar</button>
-      </div>
+    const todos      = await resTodos.json();
+    const habilitados = await resHabilitados.json();
+    const idsHabilitados = new Set(habilitados.map(c => String(c.id)));
+
+    todos.sort((a, b) => Number(a.id) - Number(b.id));
+
+    challengesList.innerHTML = todos.map(c => `
+      <label class="list-item" style="cursor:pointer;">
+        <input type="checkbox" value="${c.id}" ${idsHabilitados.has(String(c.id)) ? "checked" : ""} />
+        <span>${c.id} — ${c.etapa} — ${c.nombre}</span>
+      </label>
     `).join("");
 
-    challengesList.querySelectorAll(".btn-quitar").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const token = await getToken();
-        const res = await fetch(`${API}/${selectedUid}/quitar`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ id_challenge: btn.dataset.id })
-        });
-        if (res.ok) {
-          btn.closest(".list-item").remove();
-        } else {
-          alert("Error al quitar challenge");
-        }
-      });
-    });
+    btnGuardar.style.display = "block";
   }
 
   // ─── cargar supervisores ────────────────────────────────
@@ -124,40 +91,27 @@ export async function init(container) {
         selectedUid = btn.dataset.uid;
         supervisorNombre.textContent = btn.dataset.nombre;
         supervisorPanel.style.display = "block";
-        await fetchChallowedDeSupervisor(selectedUid);
+        await fetchYRenderChallenges(selectedUid);
       });
     });
   }
 
   // ─── agregar challenge ──────────────────────────────────
-  container.querySelector("#btn-agregar").addEventListener("click", async () => {
-    const id_challenge = Number(selectChallenge.value);
-    if (!id_challenge) { alert("Seleccioná un challenge"); return; }
+  container.querySelector("#btn-guardar").addEventListener("click", async () => {
+    const checks = [...challengesList.querySelectorAll("input[type=checkbox]:checked")];
+    const id_challenges = checks.map(cb => cb.value);
 
-    // traer los actuales y agregar el nuevo
     const token = await getToken();
-    const resActuales = await fetch(`${API}/${selectedUid}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const actuales = await resActuales.json();
-    const ids = actuales.map(c => Number(c.id));
-
-    if (ids.includes(id_challenge)) { alert("Ya está habilitado"); return; }
-
     const res = await fetch(`${API}/${selectedUid}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ id_challenges: [...ids, id_challenge] })
+      body: JSON.stringify({ id_challenges })
     });
 
-    if (res.ok) {
-      await fetchChallowedDeSupervisor(selectedUid);
-    } else {
-      alert("Error al agregar challenge");
-    }
+    if (res.ok) alert("Guardado ✔");
+    else alert("Error al guardar");
   });
 
   // ─── carga inicial ───────────────────────────────────────
-  await fetchChallengesDisponibles();
   await fetchSupervisores();
 }
