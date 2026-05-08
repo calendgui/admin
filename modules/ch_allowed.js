@@ -35,6 +35,7 @@ export async function init(container) {
 
   let selectedUid = null;
 
+  // ─── cargar y renderizar challenges con checkboxes ──────
   async function fetchYRenderChallenges(uid) {
     challengesList.innerHTML = "Cargando...";
     btnGuardar.style.display = "none";
@@ -43,10 +44,10 @@ export async function init(container) {
 
     const [resTodos, resHabilitados] = await Promise.all([
       fetch(API_CHALLENGES, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/${uid}`,  { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/${uid}`, { headers: { Authorization: `Bearer ${token}` } })
     ]);
 
-    const todos      = await resTodos.json();
+    const todos       = await resTodos.json();
     const habilitados = await resHabilitados.json();
     const idsHabilitados = new Set(habilitados.map(c => String(c.id)));
 
@@ -66,11 +67,12 @@ export async function init(container) {
   async function fetchSupervisores() {
     supervisoresList.innerHTML = "Cargando supervisores...";
     const token = await getToken();
-    const res = await fetch(`${API}/supervisores`, {
+    const res   = await fetch(`${BASE_URL}/users`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
-    renderSupervisores(data);
+    const supervisores = data.filter(u => u.rol === 2 || u.rol === 3);
+    renderSupervisores(supervisores);
   }
 
   function renderSupervisores(items) {
@@ -81,7 +83,7 @@ export async function init(container) {
 
     supervisoresList.innerHTML = items.map(u => `
       <div class="list-item">
-        <span>${u.nombre}</span>
+        <span>${u.nombre} <small style="opacity:0.5;">${u.email ?? ""}</small></span>
         <button class="btn-select" data-uid="${u.uid}" data-nombre="${u.nombre}">Gestionar</button>
       </div>
     `).join("");
@@ -96,9 +98,9 @@ export async function init(container) {
     });
   }
 
-  // ─── agregar challenge ──────────────────────────────────
-  container.querySelector("#btn-guardar").addEventListener("click", async () => {
-    const checks = [...challengesList.querySelectorAll("input[type=checkbox]:checked")];
+  // ─── guardar cambios ────────────────────────────────────
+  btnGuardar.addEventListener("click", async () => {
+    const checks       = [...challengesList.querySelectorAll("input[type=checkbox]:checked")];
     const id_challenges = checks.map(cb => cb.value);
 
     const token = await getToken();
