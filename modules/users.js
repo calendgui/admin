@@ -77,12 +77,12 @@ export async function init(container) {
 
     list.innerHTML = items.map(u => `
       <div class="list-item" data-uid="${u.uid}">
-        <div>
-          <span>${u.nombre ?? "—"} <small style="opacity:0.5;">${u.email ?? ""}</small></span>
-          <small style="margin-left:8px;opacity:0.6;">
+        <div class="user-info">
+          <span>${u.nombre ?? "—"} <small>${u.email ?? ""}</small></span>
+          <small>
             ${ROL_LABELS[u.rol] ?? "Sin rol"}
-            ${u.ci    ? `· CI: ${u.ci}`       : ""}
-            ${u.batch ? `· Batch: ${u.batch}`  : ""}
+            ${u.ci    ? `· CI: ${u.ci}`      : ""}
+            ${u.batch ? `· Batch: ${u.batch}` : ""}
           </small>
         </div>
         <div>

@@ -54,7 +54,7 @@ export async function init(container) {
     todos.sort((a, b) => Number(a.id) - Number(b.id));
 
     challengesList.innerHTML = todos.map(c => `
-      <label class="list-item" style="cursor:pointer;">
+      <label class="list-item ch-allowed-label">
         <input type="checkbox" value="${c.id}" ${idsHabilitados.has(String(c.id)) ? "checked" : ""} />
         <span>${c.id} — ${c.etapa} — ${c.nombre}</span>
       </label>

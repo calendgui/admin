@@ -1,42 +1,278 @@
-.layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: Arial;
+/* ===================== RESET & BASE ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: sans-serif;
+  font-size: 14px;
+  color: #111;
+  background: #f9f9f9;
 }
 
-.header {
-  height: 50px;
-  background: #111;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 15px;
+/* ===================== LAYOUT ===================== */
+.layout {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
 }
 
 .body {
-  display: flex;
-  flex: 1;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  overflow: hidden;
 }
 
+/* ===================== HEADER ===================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid #e5e5e5;
+  background: #fff;
+  grid-column: 1 / -1;
+}
+
+.header .left h3 { font-size: 14px; font-weight: 600; }
+
+.header .right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header .right span { font-size: 13px; color: #666; }
+
+/* ===================== SIDEBAR ===================== */
 .sidebar {
-  width: 220px;
-  background: #1c1c1c;
-  color: white;
+  border-right: 1px solid #e5e5e5;
+  background: #fafafa;
+  padding: 1rem 0;
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  gap: 8px;
+  gap: 2px;
 }
 
 .sidebar button {
-  padding: 8px;
+  text-align: left;
+  padding: 8px 1.25rem;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #555;
+  width: 100%;
+}
+
+.sidebar button:hover,
+.sidebar button.active {
+  background: #fff;
+  color: #111;
+  font-weight: 500;
+}
+
+/* ===================== CONTENT ===================== */
+.content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: #fff;
+}
+
+/* ===================== MÓDULOS — GENERAL ===================== */
+.module-view {}
+
+.module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.module-header h2 { font-size: 16px; font-weight: 600; }
+
+/* ===================== BOTONES ===================== */
+button {
+  font-size: 13px;
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: #111;
+}
+
+button:hover { background: #f0f0f0; }
+
+/* ===================== INPUTS ===================== */
+input, select {
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  margin-bottom: 8px;
+  background: #fff;
+  color: #111;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #888;
+}
+
+/* ===================== LIST ITEMS ===================== */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.list-item .actions { display: flex; gap: 6px; }
+
+/* ===================== FORM PANEL ===================== */
+#form-panel {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+#form-panel h3 { font-size: 14px; margin-bottom: 10px; }
+
+hr {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 1rem 0;
+}
+
+/* ===================== LOGIN ===================== */
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+}
+
+.login-wrapper h1 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ===================== ANNOUNCEMENTS MODULE ===================== */
+.announcements-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.announcements-item img {
+  width: 100%;
+  max-width: 300px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.announcements-item .actions {
+  align-self: flex-end;
+}
+
+/* ===================== CH ALLOWED MODULE ===================== */
+.ch-allowed-label {
+  cursor: pointer;
+  gap: 10px;
+}
+
+.ch-allowed-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#supervisor-panel h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+#supervisor-panel h3 span {
+  font-weight: 600;
+  color: #111;
+}
+
+/* ===================== CHALLENGES MODULE ===================== */
+input:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* ===================== SPOTS MODULE ===================== */
+.spot-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.spot-color-row label {
+  font-size: 13px;
+  color: #555;
+}
+
+.spot-color-row input[type="color"] {
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-.content {
-  flex: 1;
-  padding: 20px;
-  background: #f5f5f5;
+.spot-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  flex-shrink: 0;
+}
+
+.spot-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===================== USERS MODULE ===================== */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-info small {
+  font-size: 12px;
+  color: #999;
+}
+
+#form-panel h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+#form-panel h3 span {
+  font-weight: 600;
+  color: #111;
 }

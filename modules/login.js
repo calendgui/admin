@@ -2,7 +2,7 @@ import { login } from "../config/auth.js";
 
 export function renderLogin() {
   return `
-    <div style="text-align:center;">
+    <div class="login-wrapper">
       <h1>Login</h1>
       <button id="btn-login">Login con Google</button>
     </div>

@@ -15,7 +15,7 @@ export function render() {
       <div id="form-panel" style="display:none;">
         <h3 id="form-title">Crear Spot</h3>
         <input id="field-nombre" placeholder="Nombre" />
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div class="spot-color-row">
           <label for="field-color">Color</label>
           <input id="field-color" type="color" value="#FF5733" />
         </div>
@@ -77,8 +77,8 @@ export async function init(container) {
 
     list.innerHTML = items.map(s => `
       <div class="list-item" data-id="${s.id}">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:24px;height:24px;border-radius:50%;background:${s.color};border:1px solid #ccc;flex-shrink:0;"></div>
+        <div class="spot-info">
+          <div class="spot-dot" style="background:${s.color};"></div>
           <span>${s.nombre}</span>
         </div>
         <div>
