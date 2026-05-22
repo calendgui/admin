@@ -16,7 +16,7 @@ const modules = {
   spots,
   ch_allowed,
   slots_type,
-  oiko
+  oiko,
 };
 
 export function mountDashboard(user, rerender) {
@@ -46,7 +46,7 @@ export function mountDashboard(user, rerender) {
           <button data-module="challenges">Challenges</button>
           <button data-module="announcements">Announcements</button>
           <button data-module="spots">Spots</button>
-          <button data-module="ch_allowed">SH Allowed</button>
+          <button data-module="ch_allowed">CH Allowed</button>
           <button data-module="slots_type">Slots Type</button>
           <button data-module="oiko">Health Check</button>
         </aside>
