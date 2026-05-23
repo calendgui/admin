@@ -234,9 +234,30 @@ hr {
 }
 
 /* ===================== CH ALLOWED MODULE ===================== */
+.challenges-summary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #777;
+}
+
 .ch-allowed-label {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
   cursor: pointer;
-  gap: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ch-allowed-label:hover {
+  background: #fafafa;
+  border-color: #d7dce2;
+}
+
+.ch-allowed-label.is-selected,
+.ch-allowed-label:has(input[type="checkbox"]:checked) {
+  background: #f1f5f9;
+  border-color: #b8c2cc;
+  color: #111;
 }
 
 .ch-allowed-label input[type="checkbox"] {
@@ -244,6 +265,10 @@ hr {
   margin: 0;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.ch-allowed-label span {
+  line-height: 1.35;
 }
 
 #supervisor-panel h3 {

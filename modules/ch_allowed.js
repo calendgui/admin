@@ -19,6 +19,7 @@ export function render() {
         <hr />
         <h3>Challenges habilitados para: <span id="supervisor-nombre"></span></h3>
 
+        <div id="challenges-summary" class="challenges-summary"></div>
         <div id="challenges-list">Cargando...</div>
         <button id="btn-guardar" style="display:none;">Guardar cambios</button>
       </div>
@@ -30,6 +31,7 @@ export async function init(container) {
   const supervisoresList = container.querySelector("#supervisores-list");
   const supervisorPanel  = container.querySelector("#supervisor-panel");
   const supervisorNombre = container.querySelector("#supervisor-nombre");
+  const challengesSummary = container.querySelector("#challenges-summary");
   const challengesList   = container.querySelector("#challenges-list");
   const btnGuardar       = container.querySelector("#btn-guardar");
 
@@ -38,6 +40,7 @@ export async function init(container) {
   // ─── cargar y renderizar challenges con checkboxes ──────
   async function fetchYRenderChallenges(uid) {
     challengesList.innerHTML = "Cargando...";
+    challengesSummary.textContent = "";
     btnGuardar.style.display = "none";
 
     const token = await getToken();
@@ -60,7 +63,23 @@ export async function init(container) {
       </label>
     `).join("");
 
+    updateSelectedSummary();
+
+    challengesList.querySelectorAll("input[type=checkbox]").forEach(check => {
+      check.closest(".ch-allowed-label").classList.toggle("is-selected", check.checked);
+
+      check.addEventListener("change", () => {
+        check.closest(".ch-allowed-label").classList.toggle("is-selected", check.checked);
+        updateSelectedSummary();
+      });
+    });
+
     btnGuardar.style.display = "block";
+  }
+
+  function updateSelectedSummary() {
+    const selected = challengesList.querySelectorAll("input[type=checkbox]:checked").length;
+    challengesSummary.textContent = `${selected} challenge${selected === 1 ? "" : "s"} seleccionado${selected === 1 ? "" : "s"}`;
   }
 
   // ─── cargar supervisores ────────────────────────────────

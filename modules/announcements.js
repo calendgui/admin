@@ -7,13 +7,13 @@ export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
-        <h2>Announcements</h2>
+        <h2>Anuncios</h2>
         <button id="btn-new">+ Nuevo</button>
       </div>
 
       <!-- FORM -->
       <div id="form-panel" style="display:none;">
-        <h3>Crear Announcement</h3>
+        <h3>Crear Anuncio</h3>
         <input id="field-titulo"  placeholder="Título"   />
         <input id="field-img_url" placeholder="URL imagen" />
         <div>
@@ -31,15 +31,15 @@ export function render() {
 }
 
 export async function init(container) {
-  const list      = container.querySelector("#list");
+  const list = container.querySelector("#list");
   const formPanel = container.querySelector("#form-panel");
-  const tituloInput  = container.querySelector("#field-titulo");
-  const imgUrlInput  = container.querySelector("#field-img_url");
+  const tituloInput = container.querySelector("#field-titulo");
+  const imgUrlInput = container.querySelector("#field-img_url");
 
   // ─── helpers ────────────────────────────────────────────
   function showForm() {
-    tituloInput.value  = "";
-    imgUrlInput.value  = "";
+    tituloInput.value = "";
+    imgUrlInput.value = "";
     formPanel.style.display = "block";
     tituloInput.focus();
   }
@@ -53,7 +53,7 @@ export async function init(container) {
   async function fetchAll() {
     list.innerHTML = "Cargando...";
     // GET no requiere token según la doc
-    const res  = await fetch(API);
+    const res = await fetch(API);
     const data = await res.json();
     renderList(data);
   }
@@ -64,7 +64,9 @@ export async function init(container) {
       return;
     }
 
-    list.innerHTML = items.map(a => `
+    list.innerHTML = items
+      .map(
+        (a) => `
       <div class="list-item announcements-item" data-id="${a.id}">
         <div>
           ${a.img_url ? `<img src="${a.img_url}" alt="${a.titulo}" />` : ""}
@@ -74,16 +76,18 @@ export async function init(container) {
           <button class="btn-delete" data-id="${a.id}">Borrar</button>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
 
     // DELETE
-    list.querySelectorAll(".btn-delete").forEach(btn => {
+    list.querySelectorAll(".btn-delete").forEach((btn) => {
       btn.addEventListener("click", async () => {
         if (!confirm(`¿Borrar announcement "${btn.dataset.id}"?`)) return;
         const token = await getToken();
         const res = await fetch(`${API}/${btn.dataset.id}`, {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           btn.closest(".list-item").remove();
@@ -102,20 +106,28 @@ export async function init(container) {
 
   // ─── guardar ────────────────────────────────────────────
   container.querySelector("#btn-save").addEventListener("click", async () => {
-    const titulo  = tituloInput.value.trim();
+    const titulo = tituloInput.value.trim();
     const img_url = imgUrlInput.value.trim();
 
-    if (!titulo) { alert("El título es obligatorio"); return; }
+    if (!titulo) {
+      alert("El título es obligatorio");
+      return;
+    }
 
     const token = await getToken();
     const res = await fetch(API, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ titulo, img_url })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ titulo, img_url }),
     });
 
-    if (res.ok) { hideForm(); await fetchAll(); }
-    else alert("Error al crear");
+    if (res.ok) {
+      hideForm();
+      await fetchAll();
+    } else alert("Error al crear");
   });
 
   // ─── carga inicial ───────────────────────────────────────
