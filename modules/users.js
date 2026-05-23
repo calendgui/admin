@@ -13,7 +13,7 @@ export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
-        <h2>Usarios</h2>
+        <h2>Usuarios</h2>
       </div>
 
       <!-- LISTADO -->

@@ -42,7 +42,7 @@ export function mountDashboard(user, rerender) {
 
         <!-- SIDEBAR -->
         <aside class="sidebar">
-          <button data-module="users">Usarios</button>
+          <button data-module="users">Usuarios</button>
           <button data-module="challenges">Challenges</button>
           <button data-module="announcements">Anuncios</button>
           <button data-module="spots">Spots</button>
