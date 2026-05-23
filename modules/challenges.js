@@ -7,7 +7,7 @@ export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
-        <h2>Challenges</h2>
+        <h2>Challenges codePRO</h2>
         <button id="btn-new">+ Nuevo</button>
       </div>
 
@@ -32,40 +32,41 @@ export function render() {
 }
 
 export async function init(container) {
-  const list      = container.querySelector("#list");
+  const list = container.querySelector("#list");
   const formPanel = container.querySelector("#form-panel");
   const formTitle = container.querySelector("#form-title");
-  const idInput    = container.querySelector("#field-id");
+  const idInput = container.querySelector("#field-id");
   const etapaInput = container.querySelector("#field-etapa");
-  const nameInput  = container.querySelector("#field-nombre");
+  const nameInput = container.querySelector("#field-nombre");
 
   let editingId = null;
 
   // ─── helpers ────────────────────────────────────────────
   function showForm(mode = "create", data = {}) {
-    editingId             = mode === "edit" ? data.id : null;
-    formTitle.textContent = mode === "edit" ? "Editar Challenge" : "Crear Challenge";
-    idInput.value         = data.id     ?? "";
-    etapaInput.value      = data.etapa  ?? "";
-    nameInput.value       = data.nombre ?? "";
-    idInput.disabled      = mode === "edit";
+    editingId = mode === "edit" ? data.id : null;
+    formTitle.textContent =
+      mode === "edit" ? "Editar Challenge" : "Crear Challenge";
+    idInput.value = data.id ?? "";
+    etapaInput.value = data.etapa ?? "";
+    nameInput.value = data.nombre ?? "";
+    idInput.disabled = mode === "edit";
     formPanel.style.display = "block";
   }
 
   function hideForm() {
     formPanel.style.display = "none";
-    editingId        = null;
-    idInput.value    = "";
+    editingId = null;
+    idInput.value = "";
     etapaInput.value = "";
-    nameInput.value  = "";
+    nameInput.value = "";
     idInput.disabled = false;
   }
 
   async function fetchAll() {
     list.innerHTML = "Cargando...";
     const token = await getToken();
-    const res   = await fetch(API, {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(API, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
 
@@ -81,7 +82,9 @@ export async function init(container) {
       return;
     }
 
-    list.innerHTML = items.map(c => `
+    list.innerHTML = items
+      .map(
+        (c) => `
       <div class="list-item" data-id="${c.id}">
         <span><strong>${c.id}</strong> — ${c.etapa} — ${c.nombre}</span>
         <div>
@@ -89,27 +92,29 @@ export async function init(container) {
           <button class="btn-delete" data-id="${c.id}">Borrar</button>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
 
     // EDIT
-    list.querySelectorAll(".btn-edit").forEach(btn => {
+    list.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", () => {
         showForm("edit", {
-          id:     btn.dataset.id,
-          etapa:  btn.dataset.etapa,
-          nombre: btn.dataset.nombre
+          id: btn.dataset.id,
+          etapa: btn.dataset.etapa,
+          nombre: btn.dataset.nombre,
         });
       });
     });
 
     // DELETE
-    list.querySelectorAll(".btn-delete").forEach(btn => {
+    list.querySelectorAll(".btn-delete").forEach((btn) => {
       btn.addEventListener("click", async () => {
         if (!confirm(`¿Borrar challenge "${btn.dataset.id}"?`)) return;
         const token = await getToken();
         const res = await fetch(`${API}/${btn.dataset.id}`, {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           btn.closest(".list-item").remove();
@@ -130,32 +135,48 @@ export async function init(container) {
 
   // ─── guardar ────────────────────────────────────────────
   container.querySelector("#btn-save").addEventListener("click", async () => {
-    const token  = await getToken();
-    const etapa  = etapaInput.value.trim();
+    const token = await getToken();
+    const etapa = etapaInput.value.trim();
     const nombre = nameInput.value.trim();
 
-    if (!etapa || !nombre) { alert("Etapa y nombre son obligatorios"); return; }
+    if (!etapa || !nombre) {
+      alert("Etapa y nombre son obligatorios");
+      return;
+    }
 
     if (editingId) {
       // PATCH — id va en la URL, body solo etapa y nombre
       const res = await fetch(`${API}/${editingId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ etapa, nombre })
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ etapa, nombre }),
       });
-      if (res.ok) { hideForm(); await fetchAll(); }
-      else alert("Error al actualizar");
+      if (res.ok) {
+        hideForm();
+        await fetchAll();
+      } else alert("Error al actualizar");
     } else {
       // POST — id va en el body junto con etapa y nombre
       const id = idInput.value.trim();
-      if (!id) { alert("El ID es obligatorio"); return; }
+      if (!id) {
+        alert("El ID es obligatorio");
+        return;
+      }
       const res = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id, etapa, nombre })
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id, etapa, nombre }),
       });
-      if (res.ok) { hideForm(); await fetchAll(); }
-      else alert("Error al crear");
+      if (res.ok) {
+        hideForm();
+        await fetchAll();
+      } else alert("Error al crear");
     }
   });
 

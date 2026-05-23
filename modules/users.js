@@ -6,14 +6,14 @@ const API = `${BASE_URL}/users`;
 const ROL_LABELS = {
   1: "Usuario",
   2: "Supervisor",
-  3: "Admin"
+  3: "Admin",
 };
 
 export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
-        <h2>Users</h2>
+        <h2>Usarios</h2>
       </div>
 
       <!-- LISTADO -->
@@ -38,7 +38,7 @@ export function render() {
 }
 
 export async function init(container) {
-  const list      = container.querySelector("#list");
+  const list = container.querySelector("#list");
   const formPanel = container.querySelector("#form-panel");
   const formEmail = container.querySelector("#form-email");
   const rolSelect = container.querySelector("#field-rol");
@@ -47,9 +47,9 @@ export async function init(container) {
 
   // ─── helpers ────────────────────────────────────────────
   function showForm(user) {
-    editingUid            = user.uid;
+    editingUid = user.uid;
     formEmail.textContent = user.nombre ?? user.email ?? user.uid;
-    rolSelect.value       = user.rol ?? 1;
+    rolSelect.value = user.rol ?? 1;
     formPanel.style.display = "block";
     formPanel.scrollIntoView({ behavior: "smooth" });
   }
@@ -62,8 +62,8 @@ export async function init(container) {
   async function fetchAll() {
     list.innerHTML = "Cargando...";
     const token = await getToken();
-    const res   = await fetch(API, {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(API, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     renderList(data);
@@ -75,13 +75,15 @@ export async function init(container) {
       return;
     }
 
-    list.innerHTML = items.map(u => `
+    list.innerHTML = items
+      .map(
+        (u) => `
       <div class="list-item" data-uid="${u.uid}">
         <div class="user-info">
           <span>${u.nombre ?? "—"} <small>${u.email ?? ""}</small></span>
           <small>
             ${ROL_LABELS[u.rol] ?? "Sin rol"}
-            ${u.ci    ? `· CI: ${u.ci}`      : ""}
+            ${u.ci ? `· CI: ${u.ci}` : ""}
             ${u.batch ? `· Batch: ${u.batch}` : ""}
           </small>
         </div>
@@ -90,23 +92,29 @@ export async function init(container) {
           <button class="btn-delete"   data-uid="${u.uid}" data-email="${u.email ?? u.uid}">Borrar</button>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
 
     // EDIT ROL
-    list.querySelectorAll(".btn-edit-rol").forEach(btn => {
+    list.querySelectorAll(".btn-edit-rol").forEach((btn) => {
       btn.addEventListener("click", () => {
-        showForm({ uid: btn.dataset.uid, email: btn.dataset.email, rol: Number(btn.dataset.rol) });
+        showForm({
+          uid: btn.dataset.uid,
+          email: btn.dataset.email,
+          rol: Number(btn.dataset.rol),
+        });
       });
     });
 
     // DELETE
-    list.querySelectorAll(".btn-delete").forEach(btn => {
+    list.querySelectorAll(".btn-delete").forEach((btn) => {
       btn.addEventListener("click", async () => {
         if (!confirm(`¿Eliminar usuario "${btn.dataset.email}"?`)) return;
         const token = await getToken();
         const res = await fetch(`${API}/${btn.dataset.uid}`, {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           btn.closest(".list-item").remove();
@@ -123,15 +131,20 @@ export async function init(container) {
 
   // ─── guardar rol ────────────────────────────────────────
   container.querySelector("#btn-save").addEventListener("click", async () => {
-    const rol   = Number(rolSelect.value);
+    const rol = Number(rolSelect.value);
     const token = await getToken();
-    const res   = await fetch(`${API}/${editingUid}/rol`, {
+    const res = await fetch(`${API}/${editingUid}/rol`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ rol })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ rol }),
     });
-    if (res.ok) { hideForm(); await fetchAll(); }
-    else alert("Error al actualizar rol");
+    if (res.ok) {
+      hideForm();
+      await fetchAll();
+    } else alert("Error al actualizar rol");
   });
 
   // ─── carga inicial ───────────────────────────────────────

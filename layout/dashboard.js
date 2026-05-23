@@ -33,7 +33,7 @@ export function mountDashboard(user, rerender) {
 
         <div class="right">
           <span>${user.email}</span>
-          <button id="logout-btn">Logout</button>
+          <button id="logout-btn">Cerrar sesion</button>
         </div>
       </header>
 
@@ -42,11 +42,11 @@ export function mountDashboard(user, rerender) {
 
         <!-- SIDEBAR -->
         <aside class="sidebar">
-          <button data-module="users">Users</button>
+          <button data-module="users">Usarios</button>
           <button data-module="challenges">Challenges</button>
-          <button data-module="announcements">Announcements</button>
+          <button data-module="announcements">Anuncios</button>
           <button data-module="spots">Spots</button>
-          <button data-module="ch_allowed">CH Allowed</button>
+          <button data-module="ch_allowed">CH habilitados</button>
           <button data-module="slots_type">Slots Type</button>
           <button data-module="oiko">Health Check</button>
         </aside>

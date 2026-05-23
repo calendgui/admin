@@ -8,7 +8,7 @@ export function render() {
   return `
     <div class="module-view">
       <div class="module-header">
-        <h2>CH Allowed</h2>
+        <h2>Challenges habilitados por supervisor</h2>
       </div>
 
       <!-- LISTA DE SUPERVISORES -->
@@ -29,11 +29,11 @@ export function render() {
 
 export async function init(container) {
   const supervisoresList = container.querySelector("#supervisores-list");
-  const supervisorPanel  = container.querySelector("#supervisor-panel");
+  const supervisorPanel = container.querySelector("#supervisor-panel");
   const supervisorNombre = container.querySelector("#supervisor-nombre");
   const challengesSummary = container.querySelector("#challenges-summary");
-  const challengesList   = container.querySelector("#challenges-list");
-  const btnGuardar       = container.querySelector("#btn-guardar");
+  const challengesList = container.querySelector("#challenges-list");
+  const btnGuardar = container.querySelector("#btn-guardar");
 
   let selectedUid = null;
 
@@ -47,29 +47,37 @@ export async function init(container) {
 
     const [resTodos, resHabilitados] = await Promise.all([
       fetch(API_CHALLENGES, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/${uid}`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/${uid}`, { headers: { Authorization: `Bearer ${token}` } }),
     ]);
 
-    const todos       = await resTodos.json();
+    const todos = await resTodos.json();
     const habilitados = await resHabilitados.json();
-    const idsHabilitados = new Set(habilitados.map(c => String(c.id)));
+    const idsHabilitados = new Set(habilitados.map((c) => String(c.id)));
 
     todos.sort((a, b) => Number(a.id) - Number(b.id));
 
-    challengesList.innerHTML = todos.map(c => `
+    challengesList.innerHTML = todos
+      .map(
+        (c) => `
       <label class="list-item ch-allowed-label">
         <input type="checkbox" value="${c.id}" ${idsHabilitados.has(String(c.id)) ? "checked" : ""} />
         <span>${c.id} — ${c.etapa} — ${c.nombre}</span>
       </label>
-    `).join("");
+    `,
+      )
+      .join("");
 
     updateSelectedSummary();
 
-    challengesList.querySelectorAll("input[type=checkbox]").forEach(check => {
-      check.closest(".ch-allowed-label").classList.toggle("is-selected", check.checked);
+    challengesList.querySelectorAll("input[type=checkbox]").forEach((check) => {
+      check
+        .closest(".ch-allowed-label")
+        .classList.toggle("is-selected", check.checked);
 
       check.addEventListener("change", () => {
-        check.closest(".ch-allowed-label").classList.toggle("is-selected", check.checked);
+        check
+          .closest(".ch-allowed-label")
+          .classList.toggle("is-selected", check.checked);
         updateSelectedSummary();
       });
     });
@@ -78,7 +86,9 @@ export async function init(container) {
   }
 
   function updateSelectedSummary() {
-    const selected = challengesList.querySelectorAll("input[type=checkbox]:checked").length;
+    const selected = challengesList.querySelectorAll(
+      "input[type=checkbox]:checked",
+    ).length;
     challengesSummary.textContent = `${selected} challenge${selected === 1 ? "" : "s"} seleccionado${selected === 1 ? "" : "s"}`;
   }
 
@@ -86,11 +96,11 @@ export async function init(container) {
   async function fetchSupervisores() {
     supervisoresList.innerHTML = "Cargando supervisores...";
     const token = await getToken();
-    const res   = await fetch(`${BASE_URL}/users`, {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(`${BASE_URL}/users`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    const supervisores = data.filter(u => u.rol === 2 || u.rol === 3);
+    const supervisores = data.filter((u) => u.rol === 2 || u.rol === 3);
     renderSupervisores(supervisores);
   }
 
@@ -100,14 +110,18 @@ export async function init(container) {
       return;
     }
 
-    supervisoresList.innerHTML = items.map(u => `
+    supervisoresList.innerHTML = items
+      .map(
+        (u) => `
       <div class="list-item">
         <span>${u.nombre} <small style="opacity:0.5;">${u.email ?? ""}</small></span>
         <button class="btn-select" data-uid="${u.uid}" data-nombre="${u.nombre}">Gestionar</button>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
 
-    supervisoresList.querySelectorAll(".btn-select").forEach(btn => {
+    supervisoresList.querySelectorAll(".btn-select").forEach((btn) => {
       btn.addEventListener("click", async () => {
         selectedUid = btn.dataset.uid;
         supervisorNombre.textContent = btn.dataset.nombre;
@@ -119,14 +133,19 @@ export async function init(container) {
 
   // ─── guardar cambios ────────────────────────────────────
   btnGuardar.addEventListener("click", async () => {
-    const checks       = [...challengesList.querySelectorAll("input[type=checkbox]:checked")];
-    const id_challenges = checks.map(cb => cb.value);
+    const checks = [
+      ...challengesList.querySelectorAll("input[type=checkbox]:checked"),
+    ];
+    const id_challenges = checks.map((cb) => cb.value);
 
     const token = await getToken();
     const res = await fetch(`${API}/${selectedUid}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ id_challenges })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id_challenges }),
     });
 
     if (res.ok) alert("Guardado ✔");
