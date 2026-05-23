@@ -3,8 +3,15 @@ import { login } from "../config/auth.js";
 export function renderLogin() {
   return `
     <div class="login-wrapper">
-      <h1>Login</h1>
-      <button id="btn-login">Login con Google</button>
+      <section class="login-card">
+        <div class="login-brand">Admin Panel</div>
+        <h1>Bienvenido</h1>
+        <p>Accede con tu cuenta de Google para continuar.</p>
+
+        <button id="btn-login" class="google-login-btn">Continuar con Google</button>
+
+        <small>Solo usuarios autorizados</small>
+      </section>
     </div>
   `;
 }

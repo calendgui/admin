@@ -153,16 +153,64 @@ hr {
 /* ===================== LOGIN ===================== */
 .login-wrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  gap: 1rem;
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, #ffffff 0, #f4f6f8 42%, #eef1f4 100%);
 }
 
-.login-wrapper h1 {
-  font-size: 20px;
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 28px;
+  border: 1px solid #e3e6ea;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(17, 24, 39, 0.08);
+  text-align: center;
+}
+
+.login-brand {
+  margin-bottom: 18px;
+  font-size: 13px;
   font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.login-card h1 {
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.login-card p {
+  margin-bottom: 24px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.google-login-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-color: #d7dce2;
+  background: #111;
+  color: #fff;
+  font-weight: 500;
+}
+
+.google-login-btn:hover {
+  border-color: #111;
+  background: #2b2b2b;
+}
+
+.login-card small {
+  display: block;
+  margin-top: 16px;
+  color: #888;
 }
 
 /* ===================== ANNOUNCEMENTS MODULE ===================== */
