@@ -1,3 +1,4 @@
+import { getToken } from "../config/auth.js";
 import { BASE_URL } from "../config/config.js";
 
 const API = `${BASE_URL}/slots/adminslots`;
@@ -114,9 +115,12 @@ export async function init(container) {
 
   async function loadFilterOptions() {
     try {
+      const token = await getToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
       const [challengesRes, usersRes] = await Promise.all([
-        fetch(API_CHALLENGES),
-        fetch(API_USERS),
+        fetch(API_CHALLENGES, { headers }),
+        fetch(API_USERS, { headers }),
       ]);
 
       if (!challengesRes.ok || !usersRes.ok) {
