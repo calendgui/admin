@@ -21,6 +21,7 @@ export function render() {
           <label>
             Mes
             <select id="field-mes">
+              <option value="">Todos</option>
               <option value="1">Enero</option>
               <option value="2">Febrero</option>
               <option value="3">Marzo</option>
@@ -50,9 +51,8 @@ export function render() {
 
           <label>
             Evaluado
-            <select id="field-evaluado-nombre">
-              <option value="">Todos</option>
-            </select>
+            <input id="field-evaluado-nombre" list="evaluados-list" placeholder="Buscar por nombre" />
+            <datalist id="evaluados-list"></datalist>
           </label>
 
           <label>
@@ -86,23 +86,29 @@ export function render() {
 
 export async function init(container) {
   const challengeSelect = container.querySelector("#field-challenge");
-  const evaluadoSelect = container.querySelector("#field-evaluado-nombre");
+  const evaluadosList = container.querySelector("#evaluados-list");
   const filterButton = container.querySelector("#btn-filter");
   const status = container.querySelector("#slots-status");
   const list = container.querySelector("#slots-list");
+  const filterFields = [...container.querySelectorAll(".slots-filter-grid input, .slots-filter-grid select")];
 
   const fields = {
     anho: container.querySelector("#field-anho"),
     mes: container.querySelector("#field-mes"),
     batch: container.querySelector("#field-batch"),
     challenge: challengeSelect,
-    evaluado_nombre: evaluadoSelect,
+    evaluado_nombre: container.querySelector("#field-evaluado-nombre"),
     estado: container.querySelector("#field-estado"),
     type: container.querySelector("#field-type"),
     nombre_supervisor: container.querySelector("#field-nombre-supervisor"),
   };
 
   filterButton.addEventListener("click", fetchSlots);
+  filterFields.forEach((field) => {
+    field.addEventListener("input", () => updateFilterState(field));
+    field.addEventListener("change", () => updateFilterState(field));
+    updateFilterState(field);
+  });
 
   await loadFilterOptions();
 
@@ -124,6 +130,7 @@ export async function init(container) {
 
       renderChallengeOptions(challenges);
       renderUserOptions(users);
+      filterFields.forEach(updateFilterState);
     } catch (err) {
       console.error(err);
       status.textContent =
@@ -151,10 +158,13 @@ export async function init(container) {
       ...new Set(users.map((user) => user.nombre).filter(Boolean)),
     ].sort((a, b) => a.localeCompare(b, "es"));
 
-    evaluadoSelect.innerHTML = `
-      <option value="">Todos</option>
+    evaluadosList.innerHTML = `
       ${names.map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join("")}
     `;
+  }
+
+  function updateFilterState(field) {
+    field.classList.toggle("is-filled", Boolean(field.value.trim()));
   }
 
   async function fetchSlots() {

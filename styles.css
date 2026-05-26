@@ -345,6 +345,12 @@ input:disabled {
   margin-bottom: 0;
 }
 
+.slots-filter-grid input.is-filled,
+.slots-filter-grid select.is-filled {
+  border-color: #4b8f74;
+  box-shadow: 0 0 0 2px rgba(75, 143, 116, 0.12);
+}
+
 .slots-status {
   margin-bottom: 10px;
   font-size: 13px;
