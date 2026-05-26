@@ -6,6 +6,7 @@ import * as challenges from "../modules/challenges.js";
 import * as announcements from "../modules/announcements.js";
 import * as spots from "../modules/spots.js";
 import * as ch_allowed from "../modules/ch_allowed.js";
+import * as slots from "../modules/slots.js";
 import * as slots_type from "../modules/slots_type.js";
 import * as oiko from "../modules/oiko.js";
 
@@ -15,6 +16,7 @@ const modules = {
   announcements,
   spots,
   ch_allowed,
+  slots,
   slots_type,
   oiko,
 };
@@ -47,6 +49,7 @@ export function mountDashboard(user, rerender) {
           <button data-module="announcements">Anuncios</button>
           <button data-module="spots">Spots</button>
           <button data-module="ch_allowed">CH habilitados</button>
+          <button data-module="slots">Slots</button>
           <button data-module="slots_type">Slots Type</button>
           <button data-module="oiko">Health Check</button>
         </aside>
