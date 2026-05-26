@@ -18,6 +18,7 @@ const modules = {
   spots,
   ch_allowed,
   slots_type,
+  token,
   oiko,
 };
 
