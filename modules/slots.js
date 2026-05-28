@@ -41,12 +41,12 @@ export function render() {
 
           <label>
             Fecha desde
-            <input id="field-fecha-desde" type="date" />
+            <input id="field-fecha-desde" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" />
           </label>
 
           <label>
             Fecha hasta
-            <input id="field-fecha-hasta" type="date" />
+            <input id="field-fecha-hasta" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" />
           </label>
 
           <label>
@@ -264,6 +264,10 @@ export async function init(container) {
   }
 
   function formatDateForApi(value) {
+    if (value.includes("/")) {
+      return value;
+    }
+
     const [year, month, day] = value.split("-");
     return `${day}/${month}/${year}`;
   }
