@@ -2,6 +2,7 @@ import { getToken } from "../config/auth.js";
 import { BASE_URL } from "../config/config.js";
 
 const API = `${BASE_URL}/slots/adminslots`;
+const API_CSV = `${BASE_URL}/slots/adminslots/csv`;
 const API_CHALLENGES = `${BASE_URL}/challenges`;
 const API_USERS = `${BASE_URL}/users`;
 
@@ -36,6 +37,16 @@ export function render() {
               <option value="11">Noviembre</option>
               <option value="12">Diciembre</option>
             </select>
+          </label>
+
+          <label>
+            Fecha desde
+            <input id="field-fecha-desde" type="date" />
+          </label>
+
+          <label>
+            Fecha hasta
+            <input id="field-fecha-hasta" type="date" />
           </label>
 
           <label>
@@ -76,7 +87,10 @@ export function render() {
           </label>
         </div>
 
-        <button id="btn-filter">Filtrar</button>
+        <div class="slots-actions">
+          <button id="btn-filter">Filtrar</button>
+          <button id="btn-download-csv">Descargar CSV</button>
+        </div>
       </div>
 
       <div id="slots-status" class="slots-status">Usa los filtros y presiona Filtrar para consultar slots.</div>
@@ -89,6 +103,7 @@ export async function init(container) {
   const challengeSelect = container.querySelector("#field-challenge");
   const evaluadosList = container.querySelector("#evaluados-list");
   const filterButton = container.querySelector("#btn-filter");
+  const downloadButton = container.querySelector("#btn-download-csv");
   const status = container.querySelector("#slots-status");
   const list = container.querySelector("#slots-list");
   const filterFields = [...container.querySelectorAll(".slots-filter-grid input, .slots-filter-grid select")];
@@ -96,6 +111,8 @@ export async function init(container) {
   const fields = {
     anho: container.querySelector("#field-anho"),
     mes: container.querySelector("#field-mes"),
+    fecha_desde: container.querySelector("#field-fecha-desde"),
+    fecha_hasta: container.querySelector("#field-fecha-hasta"),
     batch: container.querySelector("#field-batch"),
     challenge: challengeSelect,
     evaluado_nombre: container.querySelector("#field-evaluado-nombre"),
@@ -105,6 +122,7 @@ export async function init(container) {
   };
 
   filterButton.addEventListener("click", fetchSlots);
+  downloadButton.addEventListener("click", downloadCsv);
   filterFields.forEach((field) => {
     field.addEventListener("input", () => updateFilterState(field));
     field.addEventListener("change", () => updateFilterState(field));
@@ -177,7 +195,7 @@ export async function init(container) {
     filterButton.disabled = true;
 
     try {
-      const url = buildSlotsUrl();
+      const url = buildUrl(API);
       const res = await fetch(url);
 
       if (!res.ok) {
@@ -194,16 +212,60 @@ export async function init(container) {
     }
   }
 
-  function buildSlotsUrl() {
+  async function downloadCsv() {
+    status.textContent = "Preparando CSV...";
+    downloadButton.disabled = true;
+
+    try {
+      const res = await fetch(buildUrl(API_CSV));
+
+      if (!res.ok) {
+        throw new Error("Error al descargar CSV");
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "adminslots.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      status.textContent = "CSV descargado.";
+    } catch (err) {
+      console.error(err);
+      status.textContent = "Error al descargar CSV.";
+    } finally {
+      downloadButton.disabled = false;
+    }
+  }
+
+  function buildUrl(baseUrl) {
     const params = new URLSearchParams();
 
     Object.entries(fields).forEach(([name, field]) => {
-      const value = field.value.trim();
+      const value = normalizeFilterValue(name, field.value.trim());
       if (value) params.set(name, value);
     });
 
     const query = params.toString();
-    return query ? `${API}?${query}` : API;
+    return query ? `${baseUrl}?${query}` : baseUrl;
+  }
+
+  function normalizeFilterValue(name, value) {
+    if ((name === "fecha_desde" || name === "fecha_hasta") && value) {
+      return formatDateForApi(value);
+    }
+
+    return value;
+  }
+
+  function formatDateForApi(value) {
+    const [year, month, day] = value.split("-");
+    return `${day}/${month}/${year}`;
   }
 
   function renderSlots(data) {

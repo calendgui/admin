@@ -351,6 +351,21 @@ input:disabled {
   box-shadow: 0 0 0 2px rgba(75, 143, 116, 0.12);
 }
 
+.slots-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#btn-download-csv {
+  border-color: #b8c2cc;
+  background: #f8fafc;
+}
+
+#btn-download-csv:hover {
+  background: #eef2f6;
+}
+
 .slots-status {
   margin-bottom: 10px;
   font-size: 13px;
