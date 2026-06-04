@@ -344,11 +344,13 @@ export async function init(container) {
           <small>Supervisor: ${escapeHTML(slot.nombre_supervisor ?? "Sin supervisor")}</small>
         </div>
         <div class="slot-meta">
-          <span>Batch ${escapeHTML(String(slot.batch ?? "-"))}</span>
-          <span>Challenge ${escapeHTML(String(slot.challenge ?? "-"))}</span>
-          <span class="${slot.estado ? "slot-status-active" : "slot-status-inactive"}">
-            ${slot.estado ? "Activo" : "Inactivo"}
-          </span>
+          <div class="slot-meta-tags">
+            <span>Batch ${escapeHTML(String(slot.batch ?? "-"))}</span>
+            <span>Challenge ${escapeHTML(String(slot.challenge ?? "-"))}</span>
+            <span class="${slot.estado ? "slot-status-active" : "slot-status-inactive"}">
+              ${slot.estado ? "Activo" : "Inactivo"}
+            </span>
+          </div>
           <div class="slot-actions">
             <button class="btn-mover" data-id="${escapeHTML(String(slot.id))}">Mover</button>
             ${slot.estado ? `<button class="btn-liberar" data-id="${escapeHTML(String(slot.id))}">Liberar</button>` : ""}
