@@ -1,8 +1,8 @@
 import { getToken } from "../config/auth.js";
 import { BASE_URL } from "../config/config.js";
 
-const API         = `${BASE_URL}/admin/adminslots`;
-const API_CSV     = `${BASE_URL}/admin/adminslots/csv`;
+const API            = `${BASE_URL}/admin/adminslots`;
+const API_CSV        = `${BASE_URL}/admin/adminslots/csv`;
 const API_CHALLENGES = `${BASE_URL}/challenges`;
 const API_USERS      = `${BASE_URL}/users`;
 
@@ -19,7 +19,6 @@ export function render() {
             Año
             <input id="field-anho" type="number" min="2020" placeholder="2026" />
           </label>
-
           <label>
             Mes
             <select id="field-mes">
@@ -38,35 +37,29 @@ export function render() {
               <option value="12">Diciembre</option>
             </select>
           </label>
-
           <label>
             Fecha desde
             <input id="field-fecha-desde" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" />
           </label>
-
           <label>
             Fecha hasta
             <input id="field-fecha-hasta" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" />
           </label>
-
           <label>
             Batch
             <input id="field-batch" type="number" min="1" placeholder="5" />
           </label>
-
           <label>
             Challenge
             <select id="field-challenge">
               <option value="">Todos</option>
             </select>
           </label>
-
           <label>
             Evaluado
             <input id="field-evaluado-nombre" list="evaluados-list" placeholder="Buscar por nombre" />
             <datalist id="evaluados-list"></datalist>
           </label>
-
           <label>
             Estado
             <select id="field-estado">
@@ -75,12 +68,10 @@ export function render() {
               <option value="false">Inactivo</option>
             </select>
           </label>
-
           <label>
             Tipo
             <input id="field-type" placeholder="Evaluacion" />
           </label>
-
           <label>
             Supervisor
             <input id="field-nombre-supervisor" placeholder="Cecilia Reyes" />
@@ -95,6 +86,25 @@ export function render() {
 
       <div id="slots-status" class="slots-status">Usa los filtros y presiona Filtrar para consultar slots.</div>
       <div id="slots-list"></div>
+
+      <!-- Overlay mover slot -->
+      <div id="mover-overlay" class="slot-overlay hidden">
+        <div class="slot-overlay-card">
+          <h3>Mover slot</h3>
+          <label>
+            Fecha
+            <input id="mover-fecha" type="date" />
+          </label>
+          <label>
+            Hora
+            <input id="mover-hora" type="time" />
+          </label>
+          <div class="slot-overlay-actions">
+            <button id="mover-cancelar">Cancelar</button>
+            <button id="mover-confirmar">Confirmar</button>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -108,16 +118,24 @@ export async function init(container) {
   const list            = container.querySelector("#slots-list");
   const filterFields    = [...container.querySelectorAll(".slots-filter-grid input, .slots-filter-grid select")];
 
+  const overlay         = container.querySelector("#mover-overlay");
+  const moverFecha      = container.querySelector("#mover-fecha");
+  const moverHora       = container.querySelector("#mover-hora");
+  const moverCancelar   = container.querySelector("#mover-cancelar");
+  const moverConfirmar  = container.querySelector("#mover-confirmar");
+
+  let pendingMoverId = null;
+
   const fields = {
-    anho:             container.querySelector("#field-anho"),
-    mes:              container.querySelector("#field-mes"),
-    fecha_desde:      container.querySelector("#field-fecha-desde"),
-    fecha_hasta:      container.querySelector("#field-fecha-hasta"),
-    batch:            container.querySelector("#field-batch"),
-    challenge:        challengeSelect,
-    evaluado_nombre:  container.querySelector("#field-evaluado-nombre"),
-    estado:           container.querySelector("#field-estado"),
-    type:             container.querySelector("#field-type"),
+    anho:              container.querySelector("#field-anho"),
+    mes:               container.querySelector("#field-mes"),
+    fecha_desde:       container.querySelector("#field-fecha-desde"),
+    fecha_hasta:       container.querySelector("#field-fecha-hasta"),
+    batch:             container.querySelector("#field-batch"),
+    challenge:         challengeSelect,
+    evaluado_nombre:   container.querySelector("#field-evaluado-nombre"),
+    estado:            container.querySelector("#field-estado"),
+    type:              container.querySelector("#field-type"),
     nombre_supervisor: container.querySelector("#field-nombre-supervisor"),
   };
 
@@ -129,8 +147,65 @@ export async function init(container) {
     updateFilterState(field);
   });
 
+  // Overlay: cerrar con cancelar o click fuera
+  moverCancelar.addEventListener("click", closeOverlay);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeOverlay();
+  });
+
+  moverConfirmar.addEventListener("click", async () => {
+    const fecha = moverFecha.value;
+    const hora  = moverHora.value;
+
+    if (!fecha || !hora) {
+      moverFecha.classList.toggle("input-error", !fecha);
+      moverHora.classList.toggle("input-error",  !hora);
+      return;
+    }
+
+    moverConfirmar.disabled = true;
+    moverConfirmar.textContent = "Moviendo...";
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${BASE_URL}/admin/mover-slots/${pendingMoverId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fecha, hora }),
+      });
+      if (!res.ok) throw new Error();
+      closeOverlay();
+      status.textContent = "Slot movido.";
+      await fetchSlots();
+    } catch {
+      status.textContent = "Error al mover el slot.";
+    } finally {
+      moverConfirmar.disabled = false;
+      moverConfirmar.textContent = "Confirmar";
+    }
+  });
+
   await loadFilterOptions();
 
+  // ── Helpers overlay ──────────────────────────────────────────
+  function openOverlay(id) {
+    pendingMoverId  = id;
+    moverFecha.value = "";
+    moverHora.value  = "";
+    moverFecha.classList.remove("input-error");
+    moverHora.classList.remove("input-error");
+    overlay.classList.remove("hidden");
+  }
+
+  function closeOverlay() {
+    overlay.classList.add("hidden");
+    pendingMoverId = null;
+  }
+
+  // ── Filter options ───────────────────────────────────────────
   async function loadFilterOptions() {
     try {
       const token = await getToken();
@@ -175,6 +250,7 @@ export async function init(container) {
     field.classList.toggle("is-filled", Boolean(field.value.trim()));
   }
 
+  // ── Fetch & render ───────────────────────────────────────────
   async function fetchSlots() {
     status.textContent = "Cargando slots...";
     list.innerHTML = "";
@@ -273,9 +349,70 @@ export async function init(container) {
           <span class="${slot.estado ? "slot-status-active" : "slot-status-inactive"}">
             ${slot.estado ? "Activo" : "Inactivo"}
           </span>
+          <div class="slot-actions">
+            <button class="btn-mover" data-id="${escapeHTML(String(slot.id))}">Mover</button>
+            ${slot.estado ? `<button class="btn-liberar" data-id="${escapeHTML(String(slot.id))}">Liberar</button>` : ""}
+            <button class="btn-eliminar" data-id="${escapeHTML(String(slot.id))}">Eliminar</button>
+          </div>
         </div>
       </div>
     `).join("");
+
+    // Listeners por delegación
+    list.addEventListener("click", async (e) => {
+      const id = e.target.dataset?.id;
+      if (!id) return;
+
+      if (e.target.classList.contains("btn-mover")) {
+        openOverlay(id);
+      }
+
+      if (e.target.classList.contains("btn-liberar")) {
+        if (!confirm("¿Liberar este slot?")) return;
+        await handleLiberar(id, e.target);
+      }
+
+      if (e.target.classList.contains("btn-eliminar")) {
+        if (!confirm("¿Eliminar este slot? Esta acción no se puede deshacer.")) return;
+        await handleEliminar(id, e.target);
+      }
+    });
+  }
+
+  async function handleLiberar(id, btn) {
+    btn.disabled = true;
+    status.textContent = "Liberando...";
+    try {
+      const token = await getToken();
+      const res = await fetch(`${BASE_URL}/admin/liberar-slots/${id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      status.textContent = "Slot liberado.";
+      await fetchSlots();
+    } catch {
+      status.textContent = "Error al liberar el slot.";
+      btn.disabled = false;
+    }
+  }
+
+  async function handleEliminar(id, btn) {
+    btn.disabled = true;
+    status.textContent = "Eliminando...";
+    try {
+      const token = await getToken();
+      const res = await fetch(`${BASE_URL}/admin/slots/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      status.textContent = "Slot eliminado.";
+      await fetchSlots();
+    } catch {
+      status.textContent = "Error al eliminar el slot.";
+      btn.disabled = false;
+    }
   }
 }
 

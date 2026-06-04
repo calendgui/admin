@@ -419,6 +419,103 @@ input:disabled {
   color: #8a2f2f;
   background: #fbf0f0;
 }
+/* ── Slot actions ── */
+.slot-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.slot-actions button {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #444;
+}
+
+.slot-actions button:hover { background: #f5f5f5; }
+
+.slot-actions .btn-liberar {
+  border-color: #b7d7c3;
+  color: #25613a;
+}
+
+.slot-actions .btn-liberar:hover { background: #eef8f1; }
+
+.slot-actions .btn-eliminar {
+  border-color: #e2b8b8;
+  color: #8a2f2f;
+}
+
+.slot-actions .btn-eliminar:hover { background: #fbf0f0; }
+
+/* ── Overlay mover ── */
+.slot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.slot-overlay.hidden { display: none; }
+
+.slot-overlay-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.slot-overlay-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.slot-overlay-card label {
+  font-size: 12px;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slot-overlay-card input {
+  margin: 0;
+}
+
+.slot-overlay-card input.input-error {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12);
+}
+
+.slot-overlay-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.slot-overlay-actions #mover-confirmar {
+  border-color: #4b8f74;
+  color: #25613a;
+  background: #eef8f1;
+}
+
+.slot-overlay-actions #mover-confirmar:hover { background: #ddf2e8; }
+.slot-overlay-actions #mover-confirmar:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ===================== USERS MODULE ===================== */
 .users-filters {
