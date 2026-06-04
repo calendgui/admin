@@ -16,6 +16,40 @@ export function render() {
         <h2>Usuarios</h2>
       </div>
 
+      <!-- FILTROS -->
+      <div class="users-filters">
+        <div class="users-filter-grid">
+          <label>
+            Nombre
+            <input id="filter-nombre" list="users-name-list" placeholder="Buscar por nombre" />
+            <datalist id="users-name-list"></datalist>
+          </label>
+
+          <label>
+            Email
+            <input id="filter-email" list="users-email-list" placeholder="Buscar por email" />
+            <datalist id="users-email-list"></datalist>
+          </label>
+
+          <label>
+            Rol
+            <select id="filter-rol">
+              <option value="">Todos</option>
+              <option value="1">Usuario</option>
+              <option value="2">Supervisor</option>
+              <option value="3">Admin</option>
+            </select>
+          </label>
+
+          <label>
+            Batch
+            <input id="filter-batch" type="number" min="1" placeholder="5" />
+          </label>
+        </div>
+      </div>
+
+      <div id="users-summary" class="users-summary"></div>
+
       <!-- LISTADO -->
       <div id="list">Cargando...</div>
 
@@ -42,8 +76,24 @@ export async function init(container) {
   const formPanel = container.querySelector("#form-panel");
   const formEmail = container.querySelector("#form-email");
   const rolSelect = container.querySelector("#field-rol");
+  const summary = container.querySelector("#users-summary");
+  const nameList = container.querySelector("#users-name-list");
+  const emailList = container.querySelector("#users-email-list");
+  const filterFields = [...container.querySelectorAll(".users-filter-grid input, .users-filter-grid select")];
+  const filters = {
+    nombre: container.querySelector("#filter-nombre"),
+    email: container.querySelector("#filter-email"),
+    rol: container.querySelector("#filter-rol"),
+    batch: container.querySelector("#filter-batch"),
+  };
 
   let editingUid = null;
+  let allUsers = [];
+
+  filterFields.forEach((field) => {
+    field.addEventListener("input", applyFilters);
+    field.addEventListener("change", applyFilters);
+  });
 
   // ─── helpers ────────────────────────────────────────────
   function showForm(user) {
@@ -66,7 +116,44 @@ export async function init(container) {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    renderList(data);
+    allUsers = data;
+    renderFilterOptions(allUsers);
+    applyFilters();
+  }
+
+  function renderFilterOptions(users) {
+    const names = [...new Set(users.map((user) => user.nombre).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "es"));
+    const emails = [...new Set(users.map((user) => user.email).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "es"));
+
+    nameList.innerHTML = names.map((name) => `<option value="${escapeHTML(name)}"></option>`).join("");
+    emailList.innerHTML = emails.map((email) => `<option value="${escapeHTML(email)}"></option>`).join("");
+  }
+
+  function applyFilters() {
+    filterFields.forEach(updateFilterState);
+
+    const nombre = filters.nombre.value.trim().toLowerCase();
+    const email = filters.email.value.trim().toLowerCase();
+    const rol = filters.rol.value;
+    const batch = filters.batch.value.trim();
+
+    const filtered = allUsers.filter((user) => {
+      const matchesName = !nombre || (user.nombre ?? "").toLowerCase().includes(nombre);
+      const matchesEmail = !email || (user.email ?? "").toLowerCase().includes(email);
+      const matchesRol = !rol || String(user.rol ?? "") === rol;
+      const matchesBatch = !batch || String(user.batch ?? "") === batch;
+
+      return matchesName && matchesEmail && matchesRol && matchesBatch;
+    });
+
+    renderList(filtered);
+    summary.textContent = `${filtered.length} de ${allUsers.length} usuario${allUsers.length === 1 ? "" : "s"}`;
+  }
+
+  function updateFilterState(field) {
+    field.classList.toggle("is-filled", Boolean(field.value.trim()));
   }
 
   function renderList(items) {
@@ -149,4 +236,13 @@ export async function init(container) {
 
   // ─── carga inicial ───────────────────────────────────────
   await fetchAll();
+}
+
+function escapeHTML(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
