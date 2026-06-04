@@ -1,10 +1,10 @@
 import { getToken } from "../config/auth.js";
 import { BASE_URL } from "../config/config.js";
 
-const API = `${BASE_URL}/slots/adminslots`;
-const API_CSV = `${BASE_URL}/slots/adminslots/csv`;
+const API         = `${BASE_URL}/admin/adminslots`;
+const API_CSV     = `${BASE_URL}/admin/adminslots/csv`;
 const API_CHALLENGES = `${BASE_URL}/challenges`;
-const API_USERS = `${BASE_URL}/users`;
+const API_USERS      = `${BASE_URL}/users`;
 
 export function render() {
   return `
@@ -101,30 +101,30 @@ export function render() {
 
 export async function init(container) {
   const challengeSelect = container.querySelector("#field-challenge");
-  const evaluadosList = container.querySelector("#evaluados-list");
-  const filterButton = container.querySelector("#btn-filter");
-  const downloadButton = container.querySelector("#btn-download-csv");
-  const status = container.querySelector("#slots-status");
-  const list = container.querySelector("#slots-list");
-  const filterFields = [...container.querySelectorAll(".slots-filter-grid input, .slots-filter-grid select")];
+  const evaluadosList   = container.querySelector("#evaluados-list");
+  const filterButton    = container.querySelector("#btn-filter");
+  const downloadButton  = container.querySelector("#btn-download-csv");
+  const status          = container.querySelector("#slots-status");
+  const list            = container.querySelector("#slots-list");
+  const filterFields    = [...container.querySelectorAll(".slots-filter-grid input, .slots-filter-grid select")];
 
   const fields = {
-    anho: container.querySelector("#field-anho"),
-    mes: container.querySelector("#field-mes"),
-    fecha_desde: container.querySelector("#field-fecha-desde"),
-    fecha_hasta: container.querySelector("#field-fecha-hasta"),
-    batch: container.querySelector("#field-batch"),
-    challenge: challengeSelect,
-    evaluado_nombre: container.querySelector("#field-evaluado-nombre"),
-    estado: container.querySelector("#field-estado"),
-    type: container.querySelector("#field-type"),
+    anho:             container.querySelector("#field-anho"),
+    mes:              container.querySelector("#field-mes"),
+    fecha_desde:      container.querySelector("#field-fecha-desde"),
+    fecha_hasta:      container.querySelector("#field-fecha-hasta"),
+    batch:            container.querySelector("#field-batch"),
+    challenge:        challengeSelect,
+    evaluado_nombre:  container.querySelector("#field-evaluado-nombre"),
+    estado:           container.querySelector("#field-estado"),
+    type:             container.querySelector("#field-type"),
     nombre_supervisor: container.querySelector("#field-nombre-supervisor"),
   };
 
   filterButton.addEventListener("click", fetchSlots);
   downloadButton.addEventListener("click", downloadCsv);
   filterFields.forEach((field) => {
-    field.addEventListener("input", () => updateFilterState(field));
+    field.addEventListener("input",  () => updateFilterState(field));
     field.addEventListener("change", () => updateFilterState(field));
     updateFilterState(field);
   });
@@ -138,12 +138,11 @@ export async function init(container) {
 
       const [challengesRes, usersRes] = await Promise.all([
         fetch(API_CHALLENGES, { headers }),
-        fetch(API_USERS, { headers }),
+        fetch(API_USERS,      { headers }),
       ]);
 
-      if (!challengesRes.ok || !usersRes.ok) {
+      if (!challengesRes.ok || !usersRes.ok)
         throw new Error("No se pudieron cargar los filtros");
-      }
 
       const [challenges, users] = await Promise.all([
         challengesRes.json(),
@@ -155,34 +154,21 @@ export async function init(container) {
       filterFields.forEach(updateFilterState);
     } catch (err) {
       console.error(err);
-      status.textContent =
-        "No se pudieron cargar los filtros. Puedes intentar filtrar manualmente más tarde.";
+      status.textContent = "No se pudieron cargar los filtros. Puedes intentar filtrar manualmente más tarde.";
     }
   }
 
   function renderChallengeOptions(challenges) {
     const sorted = [...challenges].sort((a, b) => Number(a.id) - Number(b.id));
-
     challengeSelect.innerHTML = `
       <option value="">Todos</option>
-      ${sorted
-        .map(
-          (challenge) => `
-        <option value="${escapeHTML(challenge.id)}">${escapeHTML(challenge.nombre ?? "")}</option>
-      `,
-        )
-        .join("")}
+      ${sorted.map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML(c.nombre ?? "")}</option>`).join("")}
     `;
   }
 
   function renderUserOptions(users) {
-    const names = [
-      ...new Set(users.map((user) => user.nombre).filter(Boolean)),
-    ].sort((a, b) => a.localeCompare(b, "es"));
-
-    evaluadosList.innerHTML = `
-      ${names.map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join("")}
-    `;
+    const names = [...new Set(users.map(u => u.nombre).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+    evaluadosList.innerHTML = names.map(n => `<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join("");
   }
 
   function updateFilterState(field) {
@@ -195,12 +181,11 @@ export async function init(container) {
     filterButton.disabled = true;
 
     try {
+      const token = await getToken();
       const url = buildUrl(API);
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
-      if (!res.ok) {
-        throw new Error("Error al consultar slots");
-      }
+      if (!res.ok) throw new Error("Error al consultar slots");
 
       const data = await res.json();
       renderSlots(data);
@@ -217,16 +202,14 @@ export async function init(container) {
     downloadButton.disabled = true;
 
     try {
-      const res = await fetch(buildUrl(API_CSV));
+      const token = await getToken();
+      const res = await fetch(buildUrl(API_CSV), { headers: { Authorization: `Bearer ${token}` } });
 
-      if (!res.ok) {
-        throw new Error("Error al descargar CSV");
-      }
+      if (!res.ok) throw new Error("Error al descargar CSV");
 
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const url  = URL.createObjectURL(blob);
       const link = document.createElement("a");
-
       link.href = url;
       link.download = "adminslots.csv";
       document.body.appendChild(link);
@@ -245,29 +228,22 @@ export async function init(container) {
 
   function buildUrl(baseUrl) {
     const params = new URLSearchParams();
-
     Object.entries(fields).forEach(([name, field]) => {
       const value = normalizeFilterValue(name, field.value.trim());
       if (value) params.set(name, value);
     });
-
     const query = params.toString();
     return query ? `${baseUrl}?${query}` : baseUrl;
   }
 
   function normalizeFilterValue(name, value) {
-    if ((name === "fecha_desde" || name === "fecha_hasta") && value) {
+    if ((name === "fecha_desde" || name === "fecha_hasta") && value)
       return formatDateForApi(value);
-    }
-
     return value;
   }
 
   function formatDateForApi(value) {
-    if (value.includes("/")) {
-      return value;
-    }
-
+    if (value.includes("/")) return value;
     const [year, month, day] = value.split("-");
     return `${day}/${month}/${year}`;
   }
@@ -283,9 +259,7 @@ export async function init(container) {
       return;
     }
 
-    list.innerHTML = slots
-      .map(
-        (slot) => `
+    list.innerHTML = slots.map(slot => `
       <div class="list-item slot-item">
         <div class="slot-main">
           <strong>${escapeHTML(slot.fecha ?? "")} · ${escapeHTML(slot.hora ?? "")}</strong>
@@ -301,9 +275,7 @@ export async function init(container) {
           </span>
         </div>
       </div>
-    `,
-      )
-      .join("");
+    `).join("");
   }
 }
 

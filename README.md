@@ -11,7 +11,7 @@ Panel de administración para gestionar usuarios, challenges, spots y más.
 - Fetch API
 
 ## 📁 Estructura
-
+```
 src/
 ├── config/
 │   ├── auth.js          # Firebase Auth
@@ -26,7 +26,7 @@ src/
     ├── spots.js
     ├── slots_type.js
     └── ch_allowed.js
-
+```
 ## Deploy
 
 El proyecto está conectado a BackendGui(Render). Para ver los cambios reflejados en producción, simplemente pusheá al repositorio:
